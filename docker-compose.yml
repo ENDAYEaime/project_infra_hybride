@@ -1,0 +1,30 @@
+services:
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: redpanda
+    command:
+      - redpanda start
+      - --overprovisioned
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
+      - --kafka-addr PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr PLAINTEXT://redpanda:9092
+    ports:
+      - "9092:9092"
+
+  producer:
+    build: ./producer
+    depends_on:
+      - redpanda
+
+  spark:
+    build: ./spark
+    depends_on:
+      - redpanda
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
